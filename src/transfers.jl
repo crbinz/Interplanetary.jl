@@ -34,7 +34,7 @@ end
 
 function get_launch_asymptote( v_INF_HCI::Vector{Float64},
                                epoch::Float64 )
-    T = hci2eci_matrix( epoch )
+    T = get_hci2eci_matrix( epoch )
     v_INF_ECI = T*v_INF_HCI
     α = atan2(v_INF_ECI[2],v_INF_ECI[1])
     δ = asin(v_INF_ECI[3]/norm(v_INF_ECI))
