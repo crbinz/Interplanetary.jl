@@ -1,5 +1,7 @@
 # Interplanetary.jl
 
+<img src="https://crbinz.github.io/img/pcc.png" width="600px"/>
+
 A collection of code for low-fidelity interplanetary navigation and guidance modeling and simulation. It was developed for the ENAE741 at the University of Maryland. It's not exactly in a complete state, so I'm leaving it unregistered for now.
 
 ## Usage
