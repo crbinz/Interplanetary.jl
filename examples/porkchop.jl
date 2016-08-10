@@ -63,8 +63,8 @@ departure_ub_mjd = jd2mjd( datetime2julian( DateTime("2022-02-26") ) )
 departure_step = 5. #days
 TOF_step = 5. #days
 
-departure_date_range = [departure_lb_mjd:departure_step:departure_ub_mjd] 
-TOF_range = [90.:TOF_step:1500.]
+departure_date_range = collect(departure_lb_mjd:departure_step:departure_ub_mjd)
+TOF_range = collect(90.:TOF_step:1500.)
 
 # now loop over all combinations
 
@@ -94,7 +94,7 @@ end#for
 # sdata() makes a SharedArray into a regular array
 createPCC(departure_date_range,
           TOF_range,sdata(dV_total),
-          levels = [5.:2:30],
+          levels = collect(5.:2:30),
           FOM_label = "Delta V [km/s]") 
 
 # find the minimum dV solution

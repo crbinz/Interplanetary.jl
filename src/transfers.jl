@@ -208,7 +208,7 @@ function lambert(mu::Float64,
     r0 = ri - dot(ri, uh) * uh
     r1 = rf - dot(rf, uh) * uh
 
-    if abs (dot(uh, uh) - 1) > 10000 * eps()
+    if abs(dot(uh, uh) - 1) > 10000 * eps()
         error("Lambert : Aborting : Normal vector not unitary\n")
     end
 
@@ -233,8 +233,8 @@ function lambert(mu::Float64,
     vc = sqrt(mu / rc)
     wc = vc / rc
 
-    k1 = sqrt(abs ((ss - m0) * (ss - m1)))
-    k  = dot(cross (r0, r1), uh)
+    k1 = sqrt(abs((ss - m0) * (ss - m1)))
+    k  = dot(cross(r0, r1), uh)
 
     if  (k1 * k1) > (ss * (ss - cc))
         k  = k / (2 * k1 * ss)
@@ -242,9 +242,9 @@ function lambert(mu::Float64,
     else
         k2 = cc / ss
         if k >= 0
-            k  = +sqrt (1 - k2)
+            k  = +sqrt(1 - k2)
         else
-            k  = -sqrt (1 - k2)
+            k  = -sqrt(1 - k2)
         end
     end
 
@@ -272,6 +272,8 @@ function lambert(mu::Float64,
     dt = 0.
     slope = 0.
     terror = 0.
+    uold = 0.0
+    dtold = 0.0
 
     for i=1:imax 
 
@@ -297,7 +299,7 @@ function lambert(mu::Float64,
         slope  = 3 * u * uu - 4 * (h1 / y) * (k * k + (k * h0 + h1 * h1) * h1 * h1)
         terror = tdesired - dt
 
-        if abs (terror) < wc
+        if abs(terror) < wc
             if abs(terror) < tolerance * abs(tdesired )
                 break
             end
@@ -343,8 +345,8 @@ function lambert(mu::Float64,
     h  = k1 / h1
     n0 = +(k * ss - m0 * h0) / h1
     n1 = -(k * ss - m1 * h0) / h1
-    v0 = (n0 * r0 + h * cross (uh, r0)) / (m0 * m0)
-    v1 = (n1 * r1 + h * cross (uh, r1)) / (m1 * m1)
+    v0 = (n0 * r0 + h * cross(uh, r0)) / (m0 * m0)
+    v1 = (n1 * r1 + h * cross(uh, r1)) / (m1 * m1)
 
     vi  = v0
     vf  = v1
