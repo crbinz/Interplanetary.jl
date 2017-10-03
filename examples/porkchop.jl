@@ -28,7 +28,7 @@ figure of merit value for a given trajectory.
 function createPCC( departure_date_range::Vector{Float64},
                    TOF_range::Vector{Float64},
                    FOM_array::Matrix{Float64}; levels = [],
-                   FOM_label::ASCIIString = "")
+                   FOM_label::String = "")
     (depart_grid, TOF_grid) = meshgrid(departure_date_range, TOF_range)
 
     if isempty(levels)
@@ -43,7 +43,7 @@ function createPCC( departure_date_range::Vector{Float64},
     cb = colorbar()
     cb[:set_label](FOM_label)
 
-    xticks(xlocs,Date(julian2datetime(mjd2jd(xlocs))),rotation=30)
+    xticks(xlocs,Date.(Dates.julian2datetime.(mjd2jd(xlocs))),rotation=30)
     #yticks(ylocs,Date(julian2datetime(mjd2jd(ylocs))))
     xlabel("Departure date")
     ylabel("TOF [days]")
@@ -55,9 +55,9 @@ Earth_ephem = readdlm("data/Earth_2015-04-01_to_2022-09-03_step_1d.orb")
 ast_2015_PDC_ephem = readdlm("data/ast_2015_PDC_2015-04-01_to_2022-09-03_step_1d.orb")
 
 @everywhere begin # need to add cores before running this: addprocs(n)
-using Dates, Interplanetary, PyPlot
-departure_lb_mjd = jd2mjd( datetime2julian( DateTime("2015-10-01") ) )
-departure_ub_mjd = jd2mjd( datetime2julian( DateTime("2022-02-26") ) )
+using Interplanetary, PyPlot
+departure_lb_mjd = jd2mjd( Dates.datetime2julian( DateTime("2015-10-01") ) )
+departure_ub_mjd = jd2mjd( Dates.datetime2julian( DateTime("2022-02-26") ) )
 
 # set up ranges for grid search
 departure_step = 5. #days
@@ -69,7 +69,7 @@ TOF_range = collect(90.:TOF_step:1500.)
 # now loop over all combinations
 
 #dV_total = Array(Float64,N,N); # for non-parallel
-dV_total = SharedArray(Float64,length(departure_date_range),length(TOF_range))
+dV_total = SharedArray{Float64}(length(departure_date_range),length(TOF_range))
                  
 rPark = RE + 185. #parking orbit radius
 end
@@ -118,7 +118,7 @@ plot(departure_date_range[subs[1][1]],TOF_range[subs[2][1]],"r*",markersize=10)
                                        
 # print results to screen
 println("Optimal solution:")
-println("Departure date: ", Date(julian2datetime(mjd2jd(departure_date_range[subs[1][1]]))))
+println("Departure date: ", Date.(Dates.julian2datetime.(mjd2jd(departure_date_range[subs[1][1]]))))
 println("TOF (days): ",TOF_range[subs[2][1]])
 println("Earth departure ΔV [km/s]: ", dv1)
 println("Earth departure C3 [km^2/s^2]: ", c3)
