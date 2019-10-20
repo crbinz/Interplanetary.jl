@@ -7,10 +7,10 @@ Derivatives function for the restricted three-body problem in the
 Heliocentric Inertial (HCI) reference frame xHCI is the stacked state
 vector for the secondary planet + satellite: [xPlanet, xSat]
 """
-function r3bp_hci_eom( t::Float64,
-                       xHCI::Vector{Float64},
-                       xdot,
-                       mu2::Float64 = muEarth )
+function r3bp_hci_eom(t,
+                      xHCI::Vector{T},
+                      xdot,
+                      mu2 = muEarth) where {T<:AbstractFloat}
     
     derivatives = zeros(12)
     derivatives[1:3] = xHCI[4:6]   # Planet's velocity
@@ -25,10 +25,10 @@ function r3bp_hci_eom( t::Float64,
 end
 
 "Derivatives function for the two-body problem"
-function twobody_eom( t::Float64,
-                      x::Vector{Float64},
-                      xdot,
-                      mu::Float64 = muEarth )
+function twobody_eom(t,
+                     x::Vector{T},
+                     xdot,
+                     mu = muEarth) where {T<:AbstractFloat}
     
     xdot[1:3] = x[4:6]
     xdot[4:6] = -mu/(norm(x[1:3])^3) * x[1:3]
@@ -40,9 +40,9 @@ frame
 
 t should be an array of time values
 """
-function propagate_r3bp_hci( x0Planet::Vector{Float64},
-                             x0Sat::Vector{Float64},
-                             t )
+function propagate_r3bp_hci(x0Planet::Vector{T},
+                            x0Sat::Vector{T},
+                            t) where {T<:AbstractFloat}
 
     return Sundials.cvode(r3bp_hci_eom,
                    vcat(x0Planet, x0Sat),
@@ -51,8 +51,8 @@ function propagate_r3bp_hci( x0Planet::Vector{Float64},
 end
 
 "Propagate the two-body problem"
-function propagate_twobody( x0::Vector{Float64},
-                            t )
+function propagate_twobody(x0::Vector{T},
+                           t) where {T<:AbstractFloat}
     
     return Sundials.cvode(twobody_eom,
                           x0,

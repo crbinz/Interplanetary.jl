@@ -1,0 +1,9 @@
+name = "Interplanetary"
+uuid = "bbd0190f-267d-4ff3-b3ec-c78737c5a118"
+authors = ["Chris Binz <christopher.binz@nrl.navy.mil>"]
+version = "0.1.0"
+
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Roots = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
+Sundials = "c3572dad-4567-51f8-b174-8c6c989267f4"

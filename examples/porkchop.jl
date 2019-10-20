@@ -15,9 +15,11 @@
 # parallel computing capabilities, because it seemed like a good place
 # for parallelization.
 
-function meshgrid( x::Vector{Float64}, y::Vector{Float64} )
-    return ( repmat(x, 1, length(y)), 
-             repmat(y',length(x),1) )
+using DelimitedFiles, Dates, LinearAlgebra
+
+function meshgrid(x::Vector{T}, y::Vector{T}) where {T<:AbstractFloat}
+    return (repeat(x, 1, length(y)), 
+             repeat(y',length(x),1))
 end
 
 """
@@ -25,10 +27,10 @@ This function creates a Pork Chop Plot given a range of departure
 dates, time of flight for a given grid point (trajectory), and the
 figure of merit value for a given trajectory.
 """
-function createPCC( departure_date_range::Vector{Float64},
-                   TOF_range::Vector{Float64},
-                   FOM_array::Matrix{Float64}; levels = [],
-                   FOM_label::String = "")
+function createPCC( departure_date_range::Vector{T},
+                   TOF_range::Vector{T},
+                   FOM_array::Matrix{T}; levels = [],
+                   FOM_label::String = "") where {T<:AbstractFloat}
     (depart_grid, TOF_grid) = meshgrid(departure_date_range, TOF_range)
 
     if isempty(levels)
@@ -41,9 +43,9 @@ function createPCC( departure_date_range::Vector{Float64},
     ylocs,ylabels = yticks()
     xlocs,xlabels = xticks()
     cb = colorbar()
-    cb[:set_label](FOM_label)
+    cb.set_label(FOM_label)
 
-    xticks(xlocs,Date.(Dates.julian2datetime.(mjd2jd(xlocs))),rotation=30)
+    xticks(xlocs,Date.(Dates.julian2datetime.(mjd2jd.(xlocs))),rotation=30)
     #yticks(ylocs,Date(julian2datetime(mjd2jd(ylocs))))
     xlabel("Departure date")
     ylabel("TOF [days]")
@@ -54,7 +56,7 @@ end
 Earth_ephem = readdlm("data/Earth_2015-04-01_to_2022-09-03_step_1d.orb")
 ast_2015_PDC_ephem = readdlm("data/ast_2015_PDC_2015-04-01_to_2022-09-03_step_1d.orb")
 
-@everywhere begin # need to add cores before running this: addprocs(n)
+#@everywhere begin # need to add cores before running this: addprocs(n)
 using Interplanetary, PyPlot
 departure_lb_mjd = jd2mjd( Dates.datetime2julian( DateTime("2015-10-01") ) )
 departure_ub_mjd = jd2mjd( Dates.datetime2julian( DateTime("2022-02-26") ) )
@@ -68,13 +70,14 @@ TOF_range = collect(90.:TOF_step:1500.)
 
 # now loop over all combinations
 
-#dV_total = Array(Float64,N,N); # for non-parallel
-dV_total = SharedArray{Float64}(length(departure_date_range),length(TOF_range))
+dV_total = Array{Float64}(undef,length(departure_date_range),length(TOF_range)) # for non-parallel
+#dV_total = SharedArray{Float64}(length(departure_date_range),length(TOF_range))
                  
 rPark = RE + 185. #parking orbit radius
-end
+#end
 
-@time @sync @parallel for i = 1:length(departure_date_range)
+#@time @sync @parallel for i = 1:length(departure_date_range)
+for i = 1:length(departure_date_range)
     for j = 1:length(TOF_range)
         dep_date = departure_date_range[i]
         arr_date = dep_date + TOF_range[j]
@@ -99,9 +102,9 @@ createPCC(departure_date_range,
 
 # find the minimum dV solution
 # linear index of minimum, excluding zeros:
-ind = find(dV_total .== minimum(dV_total[dV_total.>0])) 
+ind = findall(dV_total .== minimum(dV_total[dV_total.>0]))[1]
 
-subs = ind2sub(size(dV_total),ind) # convert to array subscripts
+subs = CartesianIndices(dV_total)[ind] # convert to array subscripts
 opt_arrival_date = departure_date_range[subs[1][1]] + TOF_range[subs[2][1]]
 
 # plot the optimal solution on the pork chop plot
@@ -122,6 +125,6 @@ println("Departure date: ", Date.(Dates.julian2datetime.(mjd2jd(departure_date_r
 println("TOF (days): ",TOF_range[subs[2][1]])
 println("Earth departure ΔV [km/s]: ", dv1)
 println("Earth departure C3 [km^2/s^2]: ", c3)
-println("DLA (deg): ", dla*180./pi)
+println("DLA (deg): ", rad2deg(dla))
 println("Arrival ΔV [km/s]: ", dv2)
-println("Total solution ΔV [km/s]: ", dV_total[subs...][1])
+println("Total solution ΔV [km/s]: ", dV_total[subs][1])

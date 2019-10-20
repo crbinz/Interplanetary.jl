@@ -8,17 +8,13 @@ export get_prop_mass,
        lambert_target,
        lambert_transfer
 
-function get_prop_mass( m0::Float64,
-                        dV::Float64,
-                        Isp::Float64 ) 
+function get_prop_mass(m0, dV, Isp) 
     # dV in m/s, Isp in s, m0 in kg
     return m0 * (1. - exp(-dV/(9.81*Isp)))
 end
 
 "Hohmann transfer between two circular orbits"
-function hohmann_circle2circle( a1::Float64,
-                                a2::Float64,
-                                mu::Float64 )
+function hohmann_circle2circle(a1, a2, mu)
     aT = (a1 + a2)/2.
     vc1 = getv( mu, a1, a1 )
     vc2 = getv( mu, a2, a2 )
@@ -32,11 +28,10 @@ function hohmann_circle2circle( a1::Float64,
     return (aT, dV1, dV2)
 end
 
-function get_launch_asymptote( v_INF_HCI::Vector{Float64},
-                               epoch::Float64 )
+function get_launch_asymptote(v_INF_HCI::Vector{S}, epoch) where {S<:AbstractFloat}
     T = get_hci2eci_matrix( epoch )
     v_INF_ECI = T*v_INF_HCI
-    α = atan2(v_INF_ECI[2],v_INF_ECI[1])
+    α = atan(v_INF_ECI[2],v_INF_ECI[1])
     δ = asin(v_INF_ECI[3]/norm(v_INF_ECI))
     return (α,δ)
 end
@@ -46,13 +41,13 @@ Compute the relevant quantities for a Hohmann transfer between objects
 orbiting the Sun, assuming circular, coplanar orbits also assuming
 circular parking orbit
 """
-function hohmann_circular_coplanar( muDepart::Float64,
-                                    aDepart::Float64,
-                                    rPark::Float64,
-                                    muDest::Float64,
-                                    aDest::Float64,
-                                    aCapture::Float64,
-                                    rCapture::Float64 )
+function hohmann_circular_coplanar(muDepart,
+                                   aDepart,
+                                   rPark,
+                                   muDest,
+                                   aDest,
+                                   aCapture,
+                                   rCapture)
     
     # v_INF_depart: v_infinity required wrt departure planet
     # v_INF_arrive: v_infinity wrt destination planet
@@ -81,10 +76,7 @@ function hohmann_circular_coplanar( muDepart::Float64,
     return (v_INF_depart, dV_depart, v_INF_arrive, dV_cap, TOF)
 end
 
-function getArrivalDV( muDest::Float64,
-                      rCapture::Float64,
-                      aCapture::Float64,
-                      v_INF_arrive::Float64 )
+function getArrivalDV(muDest, rCapture, aCapture, v_INF_arrive)
     return abs( getvhyp(muDest, rCapture, v_INF_arrive) -
                getv(muDest, rCapture, aCapture) )
 end
@@ -93,14 +85,8 @@ end
 Compute the relevant quantities for a Hohmann transfer between objects
 orbiting the Sun, assuming circular non-coplanar orbits
 """
-function hohmann_circular( muDepart::Float64,
-                           aDepart::Float64,
-                           rPark::Float64,
-                           muDest::Float64,
-                           aDest::Float64,
-                           dInc::Float64,
-                           aCapture::Float64,
-                           rCapture::Float64 )
+function hohmann_circular(muDepart, aDepart, rPark, muDest,
+                          aDest, dInc, aCapture, rCapture)
 
     aTrans = (aDepart + aDest)/2
     
@@ -142,12 +128,8 @@ Translation of lambert_target.m
 
 Original Matlab code provided by Brent Barbee
 """
-function lambert_target(mu::Float64,
-                        TOF::Float64,
-                        r1::Vector{Float64},
-                        r2::Vector{Float64},
-                        v1::Vector{Float64},
-                        v2::Vector{Float64})
+function lambert_target(mu, TOF, r1::Vector{T}, r2::Vector{T},
+                        v1::Vector{T}, v2::Vector{T}) where {T<:AbstractFloat}
 
     uu = cross(r1, r2)
     
@@ -197,11 +179,8 @@ Comments  : 1) This routine does not have a multi-revolution capability
 Reference : Shepperd, S.W., unpublished notes.                         
 Original author: Brent Barbee
 """
-function lambert(mu::Float64,
-                 dt::Float64,
-                 ri::Vector{Float64},
-                 rf::Vector{Float64},
-                 uh::Vector{Float64})
+function lambert(mu, dt, ri::Vector{T}, rf::Vector{T},
+                 uh::Vector{T}) where {T<:AbstractFloat}
 
     ### Initialization Iteration Loop 
 
@@ -413,14 +392,14 @@ assumes Sun as the central body
 
 Units are km and s
 """
-function lambert_transfer(muDepart::Float64, 
-                         TOF::Float64,
-                         launchEpoch::Float64,
-                         rPark::Float64, 
-                         x1_HCI::Vector{Float64}, x2_HCI::Vector{Float64},
-                         muDest::Float64 = 0., 
-                         rCapture::Float64 = 1000.,
-                         aCapture::Float64 = 1000. )
+function lambert_transfer(muDepart, 
+                         TOF,
+                         launchEpoch,
+                         rPark, 
+                         x1_HCI::Vector{T}, x2_HCI::Vector{T},
+                         muDest = 0., 
+                         rCapture = 1000.0,
+                         aCapture = 1000.0 ) where {T<:AbstractFloat}
     (v_SC_S_depart_HCI, v_SC_S_arrive_HCI) = lambert_target( muSun,
                                                              TOF,
                                                              x1_HCI[1:3], x2_HCI[1:3],
