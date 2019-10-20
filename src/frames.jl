@@ -7,7 +7,7 @@ Compute the rotation matrix for the HCI -> ECI transformation
 
 jd is the Julian date
 """
-function get_hci2eci_matrix( jd::Float64 )
+function get_hci2eci_matrix(jd::Float64)
     
     T_JC = (jd - 2451545.0)/36525.
 

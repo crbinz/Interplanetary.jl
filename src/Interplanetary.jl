@@ -5,7 +5,8 @@
 module Interplanetary
 
 using Sundials, 
-      Roots
+    Roots,
+    LinearAlgebra
 
 export muSun, muEarth, AU, RE
 
